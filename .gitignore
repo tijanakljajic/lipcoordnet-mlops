@@ -1,0 +1,20 @@
+# Python privremeni fajlovi
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtuelno okruženje
+.venv/
+
+# Lokalni API logovi
+prediction_log.csv
+error_log.csv
+*.log
+
+# Veliki originalni skup podataka
+data/
+
+# Podešavanja editora i operativnog sistema
+.vscode/
+.DS_Store
+Thumbs.db

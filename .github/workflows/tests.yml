@@ -30,5 +30,9 @@ jobs:
       - name: Run tests
         run: python -m pytest -q test_monitoring.py
 
+      - name: Evaluate model quality
+        run: python evaluate_model.py
+        
       - name: Build Docker image
         run: docker build -t lipcoordnet-api:test .
+

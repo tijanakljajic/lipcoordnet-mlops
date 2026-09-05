@@ -13,3 +13,5 @@ error_log.csv
 
 test_monitoring.py
 README.md
+
+.metaflow/

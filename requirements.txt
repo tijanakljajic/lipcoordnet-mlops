@@ -1,6 +1,7 @@
 editdistance==0.6.2
 fastapi==0.141.1
 httpx==0.28.1
+metaflow==2.19.39
 numpy==1.24.1
 opencv-python==4.8.1.78
 pytest==9.1.1

@@ -34,8 +34,10 @@ jobs:
       - name: Run tests
         run: python -m pytest -q test_monitoring.py
 
-      - name: Evaluate model quality
-        run: python evaluate_model.py
+      - name: Run Metaflow maintenance flow
+        env:
+          METAFLOW_USER: github-actions
+        run: python maintenance_flow.py run
 
       - name: Build Docker image
         run: docker build -t lipcoordnet-api:test .

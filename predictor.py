@@ -9,5 +9,18 @@ def predict(model, video, coords, length):
             coords.unsqueeze(0),
         )
 
-    token_ids = output[0, :length].argmax(dim=-1).tolist()
-    return MyDataset.ctc_arr2txt(token_ids, start=1)
+    logits = output[0, :length]
+    probabilities = torch.softmax(logits, dim=-1)
+
+    token_probabilities, token_ids = probabilities.max(dim=-1)
+    non_blank = token_ids >= 1
+
+    if non_blank.any():
+        confidence = token_probabilities[non_blank].mean().item()
+    else:
+        confidence = 0.0
+
+    prediction = MyDataset.ctc_arr2txt(token_ids.tolist(), start=1)
+    confidence_percent = round(confidence * 100, 2)
+
+    return prediction, confidence_percent

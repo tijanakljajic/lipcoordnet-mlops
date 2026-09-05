@@ -21,6 +21,7 @@ def main():
             print(f"\nSample {sample_index}")
             print(f"Prediction: {result['prediction']}")
             print(f"Reference:  {result['reference']}")
+            print(f"Confidence: {result['confidence_percent']:.2f}%")
             print(f"WER:        {wer:.2f}%")
 
     average_wer = sum(wer_values) / len(wer_values)

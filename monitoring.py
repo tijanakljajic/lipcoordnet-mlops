@@ -27,9 +27,31 @@ def wer_percent(prediction, reference):
 
 def _append_csv(path, row):
     with LOG_LOCK:
+        fieldnames = list(row.keys())
+
+        if path.exists() and path.stat().st_size > 0:
+            with path.open(newline="", encoding="utf-8") as log_file:
+                reader = csv.DictReader(log_file)
+                existing_fieldnames = reader.fieldnames or []
+                existing_rows = list(reader)
+
+            missing_fieldnames = [
+                name for name in fieldnames if name not in existing_fieldnames
+            ]
+
+            if missing_fieldnames:
+                fieldnames = existing_fieldnames + missing_fieldnames
+                with path.open("w", newline="", encoding="utf-8") as log_file:
+                    writer = csv.DictWriter(log_file, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(existing_rows)
+            else:
+                fieldnames = existing_fieldnames
+
         needs_header = not path.exists() or path.stat().st_size == 0
+
         with path.open("a", newline="", encoding="utf-8") as log_file:
-            writer = csv.DictWriter(log_file, fieldnames=row.keys())
+            writer = csv.DictWriter(log_file, fieldnames=fieldnames)
             if needs_header:
                 writer.writeheader()
             writer.writerow(row)
@@ -43,6 +65,7 @@ def log_prediction(result):
         "prediction": result["prediction"],
         "reference": result["reference"],
         "processing_time_ms": result["processing_time_ms"],
+        "confidence_percent": result.get("confidence_percent"),
     }
     _append_csv(PREDICTION_LOG, row)
 
@@ -72,6 +95,11 @@ def get_stats():
 
     count = len(predictions)
     times = [float(row["processing_time_ms"]) for row in predictions]
+    confidences = [
+        float(row["confidence_percent"])
+        for row in predictions
+        if row.get("confidence_percent") not in (None, "")
+    ]
     total_word_errors = 0
     total_reference_words = 0
     for row in predictions:
@@ -90,6 +118,11 @@ def get_stats():
     return {
         "logged_predictions": count,
         "avg_processing_time_ms": round(sum(times) / count, 2) if count else None,
+        "avg_confidence_percent": (
+            round(sum(confidences) / len(confidences), 2)
+            if confidences
+            else None
+        ),
         "logged_wer_percent": corpus_wer,
         "logged_failed_requests": len(failed_requests),
         "client_errors": sum(400 <= code < 500 for code in status_codes),

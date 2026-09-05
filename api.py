@@ -103,7 +103,7 @@ def predict_sample(sample_index: int):
 
     started_at = perf_counter()
     sample = dataset[sample_index]
-    prediction = predict(
+    prediction, confidence_percent = predict(
         app.state.model,
         sample["vid"].to(app.state.device),
         sample["coord"].to(app.state.device),
@@ -117,6 +117,7 @@ def predict_sample(sample_index: int):
     result = {
         "sample_index": sample_index,
         "prediction": prediction,
+        "confidence_percent": confidence_percent,
         "reference": reference,
         "processing_time_ms": processing_time_ms,
         "wer_percent": wer_percent(prediction, reference),

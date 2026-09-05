@@ -47,6 +47,7 @@ def test_empty_stats():
     assert monitoring.get_stats() == {
         "logged_predictions": 0,
         "avg_processing_time_ms": None,
+        "avg_confidence_percent": None,
         "logged_wer_percent": None,
         "logged_failed_requests": 0,
         "client_errors": 0,
@@ -54,26 +55,36 @@ def test_empty_stats():
     }
 
 
-def test_legacy_csv_is_preserved_and_corpus_wer_is_weighted():
+def test_legacy_csv_is_migrated_and_corpus_wer_is_weighted():
     original = (
         "timestamp_utc,sample_index,prediction,reference,processing_time_ms\n"
         "2026-09-03T13:00:00+00:00,0,PLACE GREEN WITH P EIGHT NOW,"
         "PLACE GREEN WITH Y EIGHT NOW,100\n"
     )
     monitoring.PREDICTION_LOG.write_text(original, encoding="utf-8")
-    before = monitoring.PREDICTION_LOG.read_bytes()
+
     monitoring.log_prediction({
-        "sample_index": 1, "prediction": "HELLO WORLD",
-        "reference": "HELLO WORLD", "processing_time_ms": 300, "wer_percent": 0,
+        "sample_index": 1,
+        "prediction": "HELLO WORLD",
+        "reference": "HELLO WORLD",
+        "processing_time_ms": 300,
+        "wer_percent": 0,
+        "confidence_percent": 90.0,
     })
-    assert monitoring.PREDICTION_LOG.read_bytes().startswith(before)
+
     rows = read_rows(monitoring.PREDICTION_LOG)
+
     assert len(rows) == 2
-    assert all(len(row) == 5 and None not in row for row in rows)
+    assert all(len(row) == 6 and None not in row for row in rows)
+    assert rows[0]["confidence_percent"] == ""
+    assert float(rows[1]["confidence_percent"]) == 90.0
+
     stats = monitoring.get_stats()
+
     assert stats["logged_predictions"] == 2
     assert stats["avg_processing_time_ms"] == 200.0
-    assert stats["logged_wer_percent"] == 12.5  # One error / eight words.
+    assert stats["avg_confidence_percent"] == 90.0
+    assert stats["logged_wer_percent"] == 12.5
 
 
 def test_concurrent_append_keeps_rows_and_one_header():
@@ -115,7 +126,7 @@ def api_client(monkeypatch):
 
     def fake_predict(model, video, coords, length):
         calls.append(video.value)
-        return video.value
+        return video.value, 87.5
 
     replacements = {
         "torch": {}, "options": {}, "dataset": {"MyDataset": Dataset},
@@ -153,11 +164,13 @@ def test_success_response_and_stats(api_client):
     assert response.status_code == 200
     assert response.json()["wer_percent"] == 16.67
     assert response.json()["processing_time_ms"] >= 0
+    assert response.json()["confidence_percent"] == 87.5
     assert len(calls) == 1
     stats = client.get("/stats").json()
     assert stats["logged_predictions"] == 1
     assert stats["logged_wer_percent"] == 16.67
     assert stats["logged_failed_requests"] == 0
+    assert stats["avg_confidence_percent"] == 87.5
 
 
 @pytest.mark.parametrize("path,status", [

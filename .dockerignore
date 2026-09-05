@@ -1,0 +1,15 @@
+.git/
+.github/
+.vscode/
+.venv/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+
+prediction_log.csv
+error_log.csv
+*.log
+
+test_monitoring.py
+README.md

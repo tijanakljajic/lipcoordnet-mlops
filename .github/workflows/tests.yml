@@ -3,6 +3,10 @@ name: Automated tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1"
+      timezone: "Europe/Belgrade"
 
 permissions:
   contents: read
@@ -32,7 +36,7 @@ jobs:
 
       - name: Evaluate model quality
         run: python evaluate_model.py
-        
+
       - name: Build Docker image
         run: docker build -t lipcoordnet-api:test .
 

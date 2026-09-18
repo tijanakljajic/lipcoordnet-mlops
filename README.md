@@ -203,25 +203,34 @@ The workflow performs the following stages:
 
 ## Quick start for a new user
 
-This section explains how to run the containerized LipCoordNet API from a fresh machine.
+1. Install Git and Docker Desktop. Start Docker Desktop before running the commands.
 
-The Docker-based setup does not require a local Python environment, CUDA, or an NVIDIA GPU. The Docker image uses the CPU version of PyTorch.
-
-### Prerequisites
-
-Install the following tools:
-
-- Git
-- Docker Desktop
-
-Docker Desktop must be running with Linux containers enabled.
-
-### 1. Clone the repository
+2. Clone the repository:
 
 ```powershell
 git clone https://github.com/tijanakljajic/lipcoordnet-mlops.git
 cd lipcoordnet-mlops
-A failed test, invalid checkpoint, average WER above 10%, or failed Docker build causes the workflow to fail.
+```
+
+3. Build the Docker image:
+
+```powershell
+docker build -t lipcoordnet-api:1.1 .
+```
+
+4. Run the API:
+
+```powershell
+docker run --rm -p 8001:8000 lipcoordnet-api:1.1
+```
+
+5. Open the interactive API documentation:
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+The Docker image contains the application, dependencies, pretrained model, and demo data. A new user does not need Python or a GPU to run the containerized API.
 
 ## Scope and limitations
 

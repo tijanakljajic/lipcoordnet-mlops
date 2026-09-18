@@ -201,6 +201,26 @@ The workflow performs the following stages:
 3. runs the Metaflow checkpoint-validation and model-evaluation pipeline
 4. builds the Docker image
 
+## Quick start for a new user
+
+This section explains how to run the containerized LipCoordNet API from a fresh machine.
+
+The Docker-based setup does not require a local Python environment, CUDA, or an NVIDIA GPU. The Docker image uses the CPU version of PyTorch.
+
+### Prerequisites
+
+Install the following tools:
+
+- Git
+- Docker Desktop
+
+Docker Desktop must be running with Linux containers enabled.
+
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/tijanakljajic/lipcoordnet-mlops.git
+cd lipcoordnet-mlops
 A failed test, invalid checkpoint, average WER above 10%, or failed Docker build causes the workflow to fail.
 
 ## Scope and limitations
